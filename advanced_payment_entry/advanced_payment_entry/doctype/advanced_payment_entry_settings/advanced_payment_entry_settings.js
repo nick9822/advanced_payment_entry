@@ -6,6 +6,7 @@ frappe.ui.form.on('Advanced Payment Entry Settings', {
 
 	},
 	allocate_payment_entries: function(frm){
+		frappe.msgprint("Payment Entry allocation has started for all unallocated payments")
 		frappe.call({
 			method: "advanced_payment_entry.advanced_payment_entry.ape_utilities.allocate_payment_entries",
 			args: {},

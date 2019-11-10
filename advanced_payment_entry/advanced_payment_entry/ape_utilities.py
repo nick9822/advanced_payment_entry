@@ -14,7 +14,7 @@ class ApeUtilities():
 def allocate_payment_entries():
     pe_sett = frappe.get_doc("Advanced Payment Entry Settings", "Advanced Payment Entry Settings")
     if pe_sett.enable_automated_allocation == 1:
-        pes = frappe.get_list("Payment Entry", filters=[["unallocated_amount", ">", 0], ["payment_type", "=", "Receive"]], fields=["name", "unallocated_amount", "total_allocated_amount"])
+        pes = frappe.get_list("Payment Entry", filters=[["docstatus", "=", 1], ["unallocated_amount", ">", 0], ["payment_type", "=", "Receive"]], fields=["name", "unallocated_amount", "total_allocated_amount"], order_by='posting_date')
         for e in pes:
             dc = frappe.get_doc("Payment Entry", e.name)
             args = frappe._dict({
@@ -33,30 +33,42 @@ def allocate_payment_entries():
                 balance = dc.unallocated_amount
                 for f in list_of_unpaid_trans:
                     balance -= f.outstanding_amount
-                    if balance > 0:
+                    if balance >= 0:
                         dc.append("references", {
                             "reference_doctype": f.voucher_type,
                             "reference_name": f.voucher_no,
                             "due_date": f.due_date,
                             "total_amount": f.invoice_amount,
                             "outstanding_amount": f.outstanding_amount,
-                            "allocated_amount": f.outstanding_amount,
+                            "allocated_amount": f.outstanding_amount
                             "exchange_rate": f.exchange_rate
                         })
-            dc.flags.ignore_validate_update_after_submit = True
-            dc.validate()
-            dc.submit() 
-            dc.on_submit()
-            dc.setup_party_account_field()
-            if dc.difference_amount:
-                frappe.throw(_("Difference Amount must be zero"))
-            dc.make_gl_entries(cancel=1)
-            dc.make_gl_entries()
-            dc.update_outstanding_amounts()
-            dc.update_advance_paid()
-            dc.update_expense_claim()
-            dc.set_status()
-            frappe.db.commit()
+                    elif balance < 0:
+                        dc.append("references", {
+                            "reference_doctype": f.voucher_type,
+                            "reference_name": f.voucher_no,
+                            "due_date": f.due_date,
+                            "total_amount": f.invoice_amount,
+                            "outstanding_amount": f.outstanding_amount,
+                            "allocated_amount": balance,
+                            "exchange_rate": f.exchange_rate
+                        })
+                dc.flags.ignore_validate_update_after_submit = True
+                dc.validate()
+                dc.submit() 
+                dc.on_submit()
+                dc.setup_party_account_field()
+                if dc.difference_amount:
+                    frappe.throw(_("Difference Amount must be zero"))
+                dc.make_gl_entries(cancel=1)
+                dc.make_gl_entries()
+                dc.update_outstanding_amounts()
+                dc.update_advance_paid()
+                dc.update_expense_claim()
+                dc.set_status()
+                frappe.db.commit()
+            else:
+                frappe.msgprint("No outstanding invoices for {0}".format(dc.party))
             # break
     else:
         return "Automated allocation is disabled"
