@@ -40,7 +40,7 @@ def allocate_payment_entries():
                             "due_date": f.due_date,
                             "total_amount": f.invoice_amount,
                             "outstanding_amount": f.outstanding_amount,
-                            "allocated_amount": f.outstanding_amount
+                            "allocated_amount": f.outstanding_amount,
                             "exchange_rate": f.exchange_rate
                         })
                     elif balance < 0:
