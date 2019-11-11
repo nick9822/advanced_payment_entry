@@ -29,6 +29,7 @@ def allocate_payment_entries():
                 "allocate_payment_amount": dc.unallocated_amount,
             })
             list_of_unpaid_trans = get_outstanding_reference_documents(args)
+            update_ref_flag = False
             if len(list_of_unpaid_trans) > 0:
                 balance = dc.unallocated_amount
                 for f in list_of_unpaid_trans:
@@ -43,7 +44,8 @@ def allocate_payment_entries():
                             "allocated_amount": f.outstanding_amount,
                             "exchange_rate": f.exchange_rate
                         })
-                    elif balance < 0:
+                        update_ref_flag = True
+                    elif balance < 0 and f.outstanding_amount + balance > 0:
                         dc.append("references", {
                             "reference_doctype": f.voucher_type,
                             "reference_name": f.voucher_no,
@@ -53,20 +55,22 @@ def allocate_payment_entries():
                             "allocated_amount": f.outstanding_amount + balance,
                             "exchange_rate": f.exchange_rate
                         })
-                dc.flags.ignore_validate_update_after_submit = True
-                dc.validate()
-                dc.submit() 
-                dc.on_submit()
-                dc.setup_party_account_field()
-                if dc.difference_amount:
-                    frappe.throw(_("Difference Amount must be zero"))
-                dc.make_gl_entries(cancel=1)
-                dc.make_gl_entries()
-                dc.update_outstanding_amounts()
-                dc.update_advance_paid()
-                dc.update_expense_claim()
-                dc.set_status()
-                frappe.db.commit()
+                        update_ref_flag = True
+                if update_ref_flag:
+                    dc.flags.ignore_validate_update_after_submit = True
+                    dc.validate()
+                    dc.submit() 
+                    dc.on_submit()
+                    dc.setup_party_account_field()
+                    if dc.difference_amount:
+                        frappe.throw(_("Difference Amount must be zero"))
+                    dc.make_gl_entries(cancel=1)
+                    dc.make_gl_entries()
+                    dc.update_outstanding_amounts()
+                    dc.update_advance_paid()
+                    dc.update_expense_claim()
+                    dc.set_status()
+                    frappe.db.commit()
             else:
                 frappe.msgprint("No outstanding invoices for {0}".format(dc.party))
             # break
