@@ -4,11 +4,11 @@ from . import __version__ as app_version
 
 app_name = "advanced_payment_entry"
 app_title = "Advanced Payment Entry"
-app_publisher = "GoElite"
+app_publisher = "Proenterprise Ventures"
 app_description = "Automatic allocation of payment entries"
 app_icon = "octicon octicon-file-directory"
 app_color = "grey"
-app_email = "contact@goelite.in"
+app_email = "contact@erp.co.zm"
 app_license = "MIT"
 
 # Includes in <head>
@@ -126,4 +126,3 @@ scheduler_events = {
 # override_doctype_dashboards = {
 # 	"Task": "advanced_payment_entry.task.get_dashboard_data"
 # }
-

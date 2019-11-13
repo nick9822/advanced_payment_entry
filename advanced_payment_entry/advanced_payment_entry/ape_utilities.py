@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2019, GoElite and contributors
+# Copyright (c) 2019, Proenterprise Ventures and contributors
 # For license information, please see license.txt
 from __future__ import unicode_literals
 import datetime, frappe, redis, ast

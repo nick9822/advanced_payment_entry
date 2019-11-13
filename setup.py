@@ -11,7 +11,7 @@ setup(
 	name='advanced_payment_entry',
 	version=version,
 	description='Automatic allocation of payment entries',
-	author='GoElite',
+	author='Proenterprise Ventures',
 	author_email='contact@goelite.in',
 	packages=find_packages(),
 	zip_safe=False,
